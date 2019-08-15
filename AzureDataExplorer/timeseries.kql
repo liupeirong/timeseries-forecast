@@ -1,0 +1,59 @@
+//.drop table nycdemand
+.create table nycdemand (dt: datetime, energy: real) 
+.ingest into table nycdemand ('blob_storage_sas_url')
+nycdemand | count
+
+// time series decomposition
+let lookback = 90 * 24;
+let horizon = 48;
+let test_begin = datetime(2017-08-01);
+let test_end = datetime_add('hour', horizon-1, test_begin);
+let train_begin = datetime_add('hour', 0-lookback, test_begin);
+let train_end = datetime_add('hour', -1, test_begin);
+let delta = 1h;
+nycdemand
+| make-series energy=sum(energy) on dt from train_begin to train_end step delta
+| extend(baseline, seasonal, trend, residual) = series_decompose(energy, -1, 'linefit')
+| render timechart with(title='decomposition', ysplit = panels) 
+
+// detect anomaly
+let lookback = 90 * 24;
+let horizon = 48;
+let test_begin = datetime(2017-08-01);
+let test_end = datetime_add('hour', horizon-1, test_begin);
+let train_begin = datetime_add('hour', 0-lookback, test_begin);
+let train_end = datetime_add('hour', -1, test_begin);
+let delta = 1h;
+nycdemand
+| make-series energy=sum(energy) on dt from train_begin to train_end step delta 
+| extend (anomalies, score, baseline) = series_decompose_anomalies(energy, 1.5, -1, 'linefit')
+| render anomalychart with(anomalycolumns=anomalies, title='anomalies') 
+
+// forecast hourly
+let lookback = 90 * 24;
+let horizon = 48;
+let test_begin = datetime(2017-08-08);
+let test_end = datetime_add('hour', horizon-1, test_begin);
+let train_begin = datetime_add('hour', 0-lookback, test_begin);
+let train_end = datetime_add('hour', -1, test_begin);
+let delta = 1h;
+nycdemand
+| make-series energy=sum(energy) on dt in range(train_begin, test_end, delta) 
+| extend forecast = series_decompose_forecast(energy, horizon)
+| render timechart with(title='forecast')
+
+// calculate MAPE
+let lookback = 90 * 24;
+let horizon = 48;
+let test_begin = datetime(2017-08-01);
+let test_end = datetime_add('hour', horizon-1, test_begin);
+let train_begin = datetime_add('hour', 0-lookback, test_begin);
+let train_end = datetime_add('hour', -1, test_begin);
+let delta = 1h;
+nycdemand 
+| make-series energy=sum(energy) on dt in range(train_begin, test_end, delta)
+| extend forecast = series_decompose_forecast(energy, horizon)
+| mv-expand dt, energy, forecast
+| where dt > train_end
+| extend ape = 100 * abs(todouble(energy) - todouble(forecast))/todouble(energy)
+| summarize avg(ape)
