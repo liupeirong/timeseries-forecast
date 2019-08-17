@@ -6,6 +6,8 @@ Time series forecasting using ARIMA and Azure Machine Learning.
 * In the Azure ML Conda environment, also install:
     * matplotlib
     * azure-storage-blob
+    * pyramid-arima
+    * azureml-sdk[explain,automl]
 
 ## Sample data
 We use a public dataset of NYC energy demand data on hourly basis between 2012 and 2017. The dataset csv is copied from [here](https://github.com/Azure/MachineLearningNotebooks/tree/master/how-to-use-azureml/automated-machine-learning/forecasting-energy-demand). 

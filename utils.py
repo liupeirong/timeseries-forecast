@@ -321,6 +321,31 @@ def multi_series_wide_to_tall(data, time_column_name, series_column_name, value_
     dfunpivot.drop([time_column_name], axis=1, inplace=True)
     return dfunpivot
 
+def remove_outliers_fill_na(df, target_column_name):
+    """
+    Remove outliers (negatives, zeros, values beyond 3 stdev)
+    Fill missing target values by interpolation 
+        using 2 closest non-missing values with a limit of max 6 consequtive missing values
+        fill the remaining null with mean
+    This needs to be applied to each granularity because it's possible there are only data for a few hours in a day.
+    So the hourly data will appear normal, but the daily data, abnormal.
+    """
+    # Remove outliers
+    target_mean = df[target_column_name].mean()
+    target_stdev = df[target_column_name].std()
+    outlier = df.loc[(np.abs(df[target_column_name]-target_mean) > (3*target_stdev)) & ~(df[target_column_name].isnull()), target_column_name]
+    df.loc[outlier.index, target_column_name] = np.nan
+    zeroneg = df.loc[df[target_column_name] <= 0, target_column_name]
+    df.loc[zeroneg.index, target_column_name] = np.nan
+    outlier_count = outlier.count()
+    zeroneg_count = zeroneg.count()
+    # Fill missing values
+    df = df.interpolate(limit=6, method='linear')
+    null_row_count_after_interpolation = df[target_column_name].isnull().sum()
+    if null_row_count_after_interpolation > 0:
+        df.fillna(target_mean, inplace=True)
+    return df, outlier_count, zeroneg_count, null_row_count_after_interpolation
+
 def clean_data(df, time_column_name, target_column_name, output_folder):
     """
     input dataframe is hourly based
@@ -333,10 +358,7 @@ def clean_data(df, time_column_name, target_column_name, output_folder):
     cleaning is done by:
     * Remove rows with duplicate timestamps
     * Fill missing timestamps
-    * Remove outliers (negatives, zeros, values beyond 3 stdev)
-    * Fill missing target values by interpolation 
-        using 2 closest non-missing values with a limit of max 6 consequtive missing values
-        fill the remaining null with mean
+    * Remove outliers and fill missing values
     """
     report = {}
     report['name']=target_column_name
@@ -364,25 +386,21 @@ def clean_data(df, time_column_name, target_column_name, output_folder):
     df_missing = df[df.isnull().all(axis=1)]
     missing_timeslot_count = len(df_missing)
     report['missing_timeslot_count'] = missing_timeslot_count
-    # Remove outliers
-    target_mean = df[target_column_name].mean()
-    target_stdev = df[target_column_name].std()
-    outlier = df.loc[(np.abs(df[target_column_name]-target_mean) > (3*target_stdev)) & ~(df[target_column_name].isnull()), target_column_name]
-    df.loc[outlier.index, target_column_name] = np.nan
-    zeroneg = df.loc[df[target_column_name] <= 0, target_column_name]
-    df.loc[zeroneg.index, target_column_name] = np.nan
-    outlier_count = outlier.count()
-    zeroneg_count = zeroneg.count()
-    report['outlier_count'], report['zeroneg_count'] = outlier_count, zeroneg_count
-    # Fill missing values
-    df = df.interpolate(limit=6, method='linear')
-    null_row_count_after_interpolation = df[target_column_name].isnull().sum()
-    report['null_row_count_after_interpolation'] = null_row_count_after_interpolation
-    if null_row_count_after_interpolation > 0:
-        df.fillna(target_mean, inplace=True)
-    # Aggregate data to daily and monthly
+    # Remove outliers and fill missing values
+    df, report['hourly_outlier_count'], report['hourly_zeroneg_count'], report['hourly_null_row_count_after_interpolation']  = \
+        remove_outliers_fill_na(df, target_column_name)
+
+    # Aggregate data to daily
     dfday = df[[target_column_name]].groupby(pd.Grouper(freq=timedelta(days=1))).agg({target_column_name: 'sum'})
+    # Remove outliers and fill missing values
+    dfday, report['daily_outlier_count'], report['daily_zeroneg_count'], report['daily_null_row_count_after_interpolation']  = \
+        remove_outliers_fill_na(dfday, target_column_name)
+
+    # Aggregate data to monthly
     dfmonth = df[[target_column_name]].groupby(pd.Grouper(freq='M')).agg({target_column_name: 'sum'})
+    # Remove outliers and fill missing values
+    dfmonth, report['monthly_outlier_count'], report['monthly_zeroneg_count'], report['monthly_null_row_count_after_interpolation']  = \
+        remove_outliers_fill_na(dfmonth, target_column_name)
     
     # store hourly, daily, monthly data
     df.to_csv(os.path.join(output_folder, target_column_name + '_hourly.csv'), index_label=time_column_name, float_format='%.3f')
