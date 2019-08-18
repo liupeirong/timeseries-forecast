@@ -17,20 +17,20 @@ We use the hourly NYC energy demand dataset between 2012 and 2017. The dataset c
   * azureml-sdk[explain,automl]
 
 ## Explore and clean the data
-Use the [process_data](../process_data.ipynb) Jupyter notebook to explore the data. This notebook illustrates how to fill the time series with missing timeslots, remove outliers, and aggregate the data for different forecasting granularity -
+Use the [process_data](notebooks/process_data.ipynb) Jupyter notebook to explore the data. This notebook illustrates how to fill the time series with missing timeslots, remove outliers, and aggregate the data for different forecasting granularity -
 * hourly patterns repeated daily
 * daily patterns repeated weekly
 * monthly patterns repeated yearly 
 
 ## ARIMA
-Use the [arima](../arima.ipynb) Juputer notebook to explore how to test stationarity, and if data is not stationary, how to remove trend and seasonality to forecast on the residual and then add trend and seasonality back in the forecast. 
+Use the [arima](notebooks/arima.ipynb) Juputer notebook to explore how to test stationarity, and if data is not stationary, how to remove trend and seasonality to forecast on the residual and then add trend and seasonality back in the forecast. 
 
 Determining the parameters for ARIMA requires a lot of trial and error, even with the help of ACF (auto correlation function) and PACF (partial auto correlation function) graphs. Auto ARIMA tries different parameters automatically and often produces much better results with far less effort.
 
 ## Machine Learning
-With machine learning, we transform the data out of the timeseries domain into, for example, regression problems. It's not necessary to convert data to stationary for machine learning. The [machine_learning](../machine_learning.ipynb) Jupyter notebook explores Random Forest for forecasting by manually adding features such as lags and day of week. The sample dataset itself does include weather data which is often very helpful in this type of forecasting. We didn't use weather data in this case because we want to mimic datasets that don't have weather data available.
+With machine learning, we transform the data out of the timeseries domain into, for example, regression problems. It's not necessary to convert data to stationary for machine learning. The [machine_learning](notebooks/machine_learning.ipynb) Jupyter notebook explores Random Forest for forecasting by manually adding features such as lags and day of week. The sample dataset does include weather data which is often very helpful in this type of forecasting. We didn't use weather data in this case because we want to mimic datasets that don't have weather data available.
 
-Azure AutoML forecasting is capable of fitting different ML models and chossing the best model with stack or voting ensemble.  
+Azure AutoML forecasting is capable of fitting different ML models and choosing the best model with stack or voting ensemble.  
 
 ## Putting it all together
 Once you are happy exploring the data and models locally, you can use python scripts to operationalize the machine learning pipeline. 
@@ -47,7 +47,7 @@ TODO:
 [Azure Data Explorer](https://docs.microsoft.com/en-us/azure/data-explorer/time-series-analysis) has powerful built-in time series analysis capabilities. [timeseries.kql](AzureDataExplorer/timeseries.kql) contains sample scripts that analyze the sample dataset for forecasting. For example, below chart is the output of Azure Data Explorer decomposing the sample data:
 ![Alt text](/AzureDataExplorer/decomposition.png?raw=true "Azure Data Explorer decomposition") 
 
-[Power BI] also has built-in capabilities for time series forecasting. The [sample pbix file](PowerBI/nyc_forecast_daily.pbix) demonstrates how to use Power BI to forecast on the sample data:
+Power BI also has built-in capabilities for time series forecasting. The [sample pbix file](PowerBI/nyc_forecast_daily.pbix) demonstrates how to use Power BI to forecast on the sample data:
 ![Alt text](/PowerBI/forecasting.png?raw=true "Power BI forecasting")
 
 ## Other considerations
