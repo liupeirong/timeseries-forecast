@@ -3,13 +3,7 @@ dependencies:
 - python=3.6.2
 - numpy
 - scikit-learn
-- matplotlib
-- azure-storage-blob
 
 - pip:
-  - azureml-sdk[automl, explain, notebooks, cli]
-  - pyramid-arima
-  - azure-cli==2.0.69
+  - azureml-sdk[automl]
 
-channels:
-- conda-forge
