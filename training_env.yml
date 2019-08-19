@@ -1,4 +1,4 @@
-name: automl_training_env
+name: amlenv
 dependencies:
 - python=3.6.2
 - numpy
