@@ -1,3 +1,7 @@
+[![Azure Pipeline Train](https://dev.azure.com/paigedevops/machine-learning/_apis/build/status/timeseries-forecasting/forecasting_submit_training?branchName=master)](https://dev.azure.com/paigedevops/machine-learning/_build/latest?definitionId=8&branchName=master)
+
+[![Deployment Status](https://vsrm.dev.azure.com/paigedevops/_apis/public/Release/badge/18090e16-4e7a-4097-95ee-a06aa6ea8521/9/9)](https://vsrm.dev.azure.com/paigedevops/_apis/public/Release/badge/18090e16-4e7a-4097-95ee-a06aa6ea8521/9/9)
+
 # Timeseries Forecasting
 This sample explores different methods for timeseries forecasting, including
 * Statistical algorithms - __ARIMA__ and __Auto ARIMA__ 
@@ -39,9 +43,9 @@ Once you are happy exploring the data and models locally, you can use python scr
 * [03_register_and_deploy.py](03_register_and_deploy.py) - once you are happy with a model, register it with Azure ML, and use Azure ML to automatically create a web service for forecasting
 * [04_forecast_from_webservice.py](04_forecast_from_webservice.py) - demonstrates how to call the deployed web service for forecasting
 
-TODO:
-* release pipeline for training
-* release pipeline for deployment 
+An Azure DevOps [build pipeline](https://dev.azure.com/paigedevops/machine-learning/_build?definitionId=8), also as code in [azure-pipelines.yml](azure-pipelines.yml), submits a job to train the model in Azure ML.
+
+An Azure DevOps [release pipeline](https://dev.azure.com/paigedevops/machine-learning/_release?view=all&definitionId=9) registers and deploys a model in Azure Container Instance so you can make a REST call for forecasting as described in [04_forecast_from_webservice.py](04_forecast_from_webservice.py). 
 
 ## Off-the-shelve solutions
 [Azure Data Explorer](https://docs.microsoft.com/en-us/azure/data-explorer/time-series-analysis) has powerful built-in time series analysis capabilities. [timeseries.kql](AzureDataExplorer/timeseries.kql) contains sample scripts that analyze the sample dataset for forecasting. For example, below chart is the output of Azure Data Explorer decomposing the sample data:
