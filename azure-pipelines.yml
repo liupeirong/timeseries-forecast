@@ -4,7 +4,7 @@ trigger:
 - master
 
 variables:
-- group: AML-Shareshift-Forecasting
+- group: AML Shareshift Forecasting
 
 pool:
   vmImage: 'ubuntu-latest'
