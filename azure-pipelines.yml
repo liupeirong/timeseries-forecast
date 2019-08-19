@@ -16,3 +16,13 @@ steps:
 - bash: source activate amlenv
   displayName: Activate Conda environment
 
+variables:
+- group: AML-Shareshift-Forecasting
+
+- task: AzureCLI@1
+  inputs:
+    azureSubscription: 'Shareshift'
+    scriptLocation: 'scriptPath'
+    scriptPath: '02_submit_training.py'
+    arguments: '--datastore_folder $DATASTORE_FOLDER --file_prefix $FILE_PREFIX --granularity $GRANULARITY --horizon $HORIZON'
+    
