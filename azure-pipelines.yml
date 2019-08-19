@@ -10,14 +10,16 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- bash: echo "##vso[task.prependpath]$CONDA/bin"
-  displayName: Add conda to PATH
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.6'
+    addToPath: true
+    architecture: 'x64'
 
-- bash: conda env create --quiet --file training_env.yml
-  displayName: Create Anaconda environment
-
-- bash: source activate amlenv
-  displayName: Activate Conda environment
+- bash: |
+   python -m pip install --upgrade azureml-sdk[automl]
+  
+  displayName: Install Azure ML SDK
 
 - task: AzureCLI@1
   inputs:
