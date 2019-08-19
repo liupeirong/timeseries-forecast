@@ -1,9 +1,0 @@
-name: amlenv
-dependencies:
-- python=3.6.2
-- numpy
-- scikit-learn
-
-- pip:
-  - azureml-sdk[automl]
-
