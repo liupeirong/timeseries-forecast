@@ -27,6 +27,5 @@ steps:
     scriptLocation: inlineScript
     inlineScript: |
      # just need az cli credential for the Azure ML python code later on.
-     python 02_submit_training.py
+     python 02_submit_training.py --datastore_folder $DATASTORE_FOLDER --file_prefix $FILE_PREFIX --granularity $GRANULARITY --horizon $HORIZON
 
-    arguments: '--datastore_folder $DATASTORE_FOLDER --file_prefix $FILE_PREFIX --granularity $GRANULARITY --horizon $HORIZON'
