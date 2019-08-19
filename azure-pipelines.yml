@@ -22,6 +22,9 @@ steps:
 - task: AzureCLI@1
   inputs:
     azureSubscription: 'Shareshift'
-    scriptLocation: 'scriptPath'
-    scriptPath: '02_submit_training.py'
+    scriptLocation: inlineScript
+    inlineScript: |
+     # just need az cli credential for the Azure ML python code later on.
+     python submit_training.py
+
     arguments: '--datastore_folder $DATASTORE_FOLDER --file_prefix $FILE_PREFIX --granularity $GRANULARITY --horizon $HORIZON'
