@@ -305,7 +305,7 @@ def get_and_evaluate_automl_forecast(X_test, y_test, model, target_column_name):
     y_predict, X_trans = model.forecast(X_test, y_query)
 
     mape = MAPE(y_test, y_predict)
-    dfforecast = pd.DataFrame(index = X_test.index)
+    dfforecast = X_test.copy()
     dfforecast[target_column_name] = y_predict
     return dfforecast, mape
 
@@ -321,7 +321,7 @@ def multi_series_wide_to_tall(data, time_column_name, series_column_name, value_
     dfunpivot.drop([time_column_name], axis=1, inplace=True)
     return dfunpivot
 
-def remove_outliers_fill_na(df, target_column_name):
+def remove_outliers_fill_na(df, target_column_name, min_time, max_time):
     """
     Remove outliers (negatives, zeros, values beyond 3 stdev)
     Fill missing target values by interpolation 
@@ -334,11 +334,18 @@ def remove_outliers_fill_na(df, target_column_name):
     target_mean = df[target_column_name].mean()
     target_stdev = df[target_column_name].std()
     outlier = df.loc[(np.abs(df[target_column_name]-target_mean) > (3*target_stdev)) & ~(df[target_column_name].isnull()), target_column_name]
-    df.loc[outlier.index, target_column_name] = np.nan
     zeroneg = df.loc[df[target_column_name] <= 0, target_column_name]
-    df.loc[zeroneg.index, target_column_name] = np.nan
     outlier_count = outlier.count()
     zeroneg_count = zeroneg.count()
+    
+    outlier_exists_lastyear = outlier[outlier.index > min_time + timedelta(days=1*365)].index
+    zeroneg_exists_lastyear = zeroneg[zeroneg.index > min_time + timedelta(days=1*365)].index
+    df.loc[outlier_exists_lastyear, target_column_name] = df.loc[outlier_exists_lastyear-timedelta(days=1*365), target_column_name].values
+    df.loc[zeroneg_exists_lastyear, target_column_name] = df.loc[zeroneg_exists_lastyear-timedelta(days=1*365), target_column_name].values
+    outlier_notexists_lastyear = outlier[outlier.index <= min_time + timedelta(days=1*365)].index
+    zeroneg_notexists_lastyear = zeroneg[zeroneg.index <= min_time + timedelta(days=1*365)].index
+    df.loc[outlier_notexists_lastyear, target_column_name] = np.nan
+    df.loc[zeroneg_notexists_lastyear, target_column_name] = np.nan
     # Fill missing values
     df = df.interpolate(limit=6, method='linear')
     null_row_count_after_interpolation = df[target_column_name].isnull().sum()
@@ -360,6 +367,7 @@ def clean_data(df, time_column_name, target_column_name, output_folder):
     * Fill missing timestamps
     * Remove outliers and fill missing values
     """
+    df[time_column_name]= pd.to_datetime(df[time_column_name])
     report = {}
     report['name']=target_column_name
     # Remove rows before the first non-na and after the last non-na
@@ -388,19 +396,19 @@ def clean_data(df, time_column_name, target_column_name, output_folder):
     report['missing_timeslot_count'] = missing_timeslot_count
     # Remove outliers and fill missing values
     df, report['hourly_outlier_count'], report['hourly_zeroneg_count'], report['hourly_null_row_count_after_interpolation']  = \
-        remove_outliers_fill_na(df, target_column_name)
+        remove_outliers_fill_na(df, target_column_name, min_time, max_time)
 
     # Aggregate data to daily
     dfday = df[[target_column_name]].groupby(pd.Grouper(freq=timedelta(days=1))).agg({target_column_name: 'sum'})
     # Remove outliers and fill missing values
     dfday, report['daily_outlier_count'], report['daily_zeroneg_count'], report['daily_null_row_count_after_interpolation']  = \
-        remove_outliers_fill_na(dfday, target_column_name)
+        remove_outliers_fill_na(dfday, target_column_name, min_time, max_time)
 
     # Aggregate data to monthly
     dfmonth = df[[target_column_name]].groupby(pd.Grouper(freq='M')).agg({target_column_name: 'sum'})
     # Remove outliers and fill missing values
     dfmonth, report['monthly_outlier_count'], report['monthly_zeroneg_count'], report['monthly_null_row_count_after_interpolation']  = \
-        remove_outliers_fill_na(dfmonth, target_column_name)
+        remove_outliers_fill_na(dfmonth, target_column_name, min_time, max_time)
     
     # store hourly, daily, monthly data
     df.to_csv(os.path.join(output_folder, target_column_name + '_hourly.csv'), index_label=time_column_name, float_format='%.3f')

@@ -25,8 +25,7 @@ print("data shape: ", df.shape)
 df.dropna(subset=[time_column_name], inplace=True)
 
 os.makedirs(output_data_folder, exist_ok=True)
-dfclean, report = utils.clean_data(df[[time_column_name, target_column_name]], \
-                  time_column_name, target_column_name, output_data_folder)
+dfclean, report = utils.clean_data(df, time_column_name, target_column_name, output_data_folder)
 
 dfreport = pd.DataFrame([report])
 dfreport.to_csv(os.path.join(output_data_folder, 'data_processing_report.csv'), index=False)

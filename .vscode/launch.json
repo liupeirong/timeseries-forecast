@@ -5,11 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Process data",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "envFile": "f:/dev/config/pliuaml.env",
+            "args": [
+                "--input_data_folder",
+                "data",
+                "--output_data_folder",
+                "output"
+            ]
         },
         {
             "name": "forecast",

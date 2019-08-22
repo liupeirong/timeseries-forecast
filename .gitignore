@@ -114,3 +114,6 @@ conda_dependencies.yml
 .vscode/
 **/.azureml/
 *.private
+data/*_daily*.csv
+data/*_hourly*.csv
+data/*_monthly*.csv
