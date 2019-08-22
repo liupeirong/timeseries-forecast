@@ -1,6 +1,6 @@
 [![Azure Pipeline Train](https://dev.azure.com/paigedevops/machine-learning/_apis/build/status/timeseries-forecasting/forecasting_submit_training?branchName=master)](https://dev.azure.com/paigedevops/machine-learning/_build/latest?definitionId=8&branchName=master)
 
-[![Deployment Status](https://vsrm.dev.azure.com/paigedevops/_apis/public/Release/badge/18090e16-4e7a-4097-95ee-a06aa6ea8521/9/9)](https://vsrm.dev.azure.com/paigedevops/_apis/public/Release/badge/18090e16-4e7a-4097-95ee-a06aa6ea8521/9/9)
+[![Deployment Status](https://vsrm.dev.azure.com/paigedevops/_apis/public/Release/badge/18090e16-4e7a-4097-95ee-a06aa6ea8521/9/9)](https://dev.azure.com/paigedevops/machine-learning/_release?_a=true&view=mine&definitionId=9)
 
 # Timeseries Forecasting
 This sample explores different methods for timeseries forecasting, including
